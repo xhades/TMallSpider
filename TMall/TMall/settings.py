@@ -20,7 +20,14 @@ NEWSPIDER_MODULE = 'TMall.spiders'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
+CONCURRENT_REQUESTS = 4
 
+
+MYSQL_HOST  =  '127.0.0.1'
+MYSQL_DBNAME = 'spiderdb'
+MYSQL_USER = 'user'
+MYSQL_PASSWD = 'passwd'
+MYSQL_PORT = 3306
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 

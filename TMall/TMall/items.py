@@ -11,7 +11,12 @@ import scrapy
 class TmallItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    simpleIntroduction = scrapy.Field()   # 名称
-    price = scrapy.Field()   # 价格
-    url = scrapy.Field()    # 网站链接
-
+    prodId = scrapy.Field()
+    type = scrapy.Field()
+    start_time = scrapy.Field()
+    youhui = scrapy.Field()
+    huodong = scrapy.Field()
+    yuanjia = scrapy.Field()
+    xianjia = scrapy.Field()
+    end_time = scrapy.Field()
+    title = scrapy.Field()

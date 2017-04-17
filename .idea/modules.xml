@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../spider/MeiTMall/.idea/MeiTMall.iml" filepath="$PROJECT_DIR$/../spider/MeiTMall/.idea/MeiTMall.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TMall/.idea/TMall.iml" filepath="$PROJECT_DIR$/TMall/.idea/TMall.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/TMallSpider.iml" filepath="$PROJECT_DIR$/.idea/TMallSpider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Tmall1212/.idea/Tmall1212.iml" filepath="$PROJECT_DIR$/../Tmall1212/.idea/Tmall1212.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../spider/qianduoduo/.idea/qianduoduo.iml" filepath="$PROJECT_DIR$/../spider/qianduoduo/.idea/qianduoduo.iml" />
+    </modules>
+  </component>
+</project>
