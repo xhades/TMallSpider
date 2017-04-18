@@ -20,11 +20,12 @@ from scrapy.selector import Selector
 import re
 from scrapy.selector import Selector
 from TMall.items import TmallItem
+from time import sleep
 
 
 class TmallSpider(CrawlSpider):
     name = 'mt'
-    custom_settings = {'ITEM_PIPELINES': {'TMall.pipelines.TmallPipeline':300}}
+    custom_settings = {'ITEM_PIPELINES': {'TMall.pipelines.TmallPipeline': 300}}
 
     def __init__(self):
         super(TmallSpider, self).__init__()
@@ -44,9 +45,15 @@ class TmallSpider(CrawlSpider):
     def get_name():
         pass
 
-
     def parse(self, response):
         logging.info("=====GET SUCCESS=======")
+        for page in xrange(1, 5):
+            url = 'https://lovo.tmall.com/view_shop.htm?spm=a1z10.3-b-s.w4011-14406249681.376.a7nbdA&type=p&from=inshophq_1_0&newHeader_b=s_from&searcy_type=item&search=y&orderType=defaultSort&scene=taobao_shop&keyword=%CB%C4%BC%FE%CC%D7&pageNo={}&tsearch=y#anchor'.format(page)
+            yield scrapy.Request(url, callback=self.parse_page, dont_filter=True)
+
+    def parse_page(self, response):
+        logging.info("=====PARSE NEXT PAGE=======")
+
         href_list = response.xpath("//a[@class='item-name J_TGoldData']/@href").extract()
         id_list = [re.search("id=(\d+)&", href).group(1) for href in href_list]
         for id in id_list:
@@ -60,9 +67,12 @@ class TmallSpider(CrawlSpider):
         data_mdskip = re.findall('_DATA_Mdskip = *?\n?(.*?\});? ?\n', response.body.decode('gbk'))
         data_detail_js = json.loads(data_detail[0])
         data_mdskip_js = json.loads(data_mdskip[0])
-        print data_detail[0]
-        spuid = re.search('spuId.*\"(\d+)?\"', data_detail[0]).group(1)
-        sellerid = re.search("sellerId=(\d+)", data_detail[0]).group(1)
+        try:
+            spuid = re.search('spuId.*\"(\d+)?\"', data_detail[0]).group(1)
+            sellerid = re.search("sellerId=(\d+)", data_detail[0]).group(1)
+        except:
+            spuid = ''
+            sellerid = ''
         html = response.body.decode('gbk', 'ignore')
 
         title = response.xpath('//section[@id="s-title"]/div[@class="main"]/h1/text()').extract()
@@ -182,9 +192,5 @@ class TmallSpider(CrawlSpider):
                                 itemid, spuid, sellerid, page)
                             print '-'*40, reviews_url
                         #
-                        # print item
+                        print item
                         # yield item
-
-
-
-
