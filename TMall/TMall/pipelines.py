@@ -43,29 +43,46 @@ class TmallPipeline(object):
                 valid = False
                 print 'NOT ANY DATA IN ITEM'
         if valid:
-            mysql = "INSERT IGNORE INTO `jiafang_tianmao`(" \
-                    "`prodId`," \
-                    "`type`," \
-                    "`youhui`," \
-                    " `huodong`, " \
-                    " `yuanjia`, " \
-                    " `xianjia`, " \
-                    " `start_time`, " \
-                    " `end_time`, " \
-                    " `title`) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            result = conn.execute(mysql,
-                                  (item['prodId'],
-                                   item['type'],
-                                   item['youhui'],
-                                   item['huodong'],
-                                   item['yuanjia'],
-                                   item['xianjia'],
-                                   item['start_time'],
-                                   item['end_time'],
-                                   item['title']
-                                   ))
-            if result:
-                print 'added a record'
+            if isinstance(item, TmallItem):
+                mysql = "INSERT IGNORE INTO `jiafang_tianmao`(" \
+                        "`prodId`," \
+                        "`type`," \
+                        "`youhui`," \
+                        " `huodong`, " \
+                        " `yuanjia`, " \
+                        " `xianjia`, " \
+                        " `start_time`, " \
+                        " `end_time`, " \
+                        " `title`) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                result = conn.execute(mysql,
+                                      (item['prodId'],
+                                       item['type'],
+                                       item['youhui'],
+                                       item['huodong'],
+                                       item['yuanjia'],
+                                       item['xianjia'],
+                                       item['start_time'],
+                                       item['end_time'],
+                                       item['title']
+                                       ))
+                if result:
+                    print 'added a record'
+                else:
+                    print 'failed insert into table `jiafang_tianmao`'
             else:
-                print 'failed insert into table `jiafang_tianmao`'
+                mysql = "INSERT IGNORE INTO `jiafang_tianmao_reviews`(" \
+                        "`prodId`," \
+                        "`name`," \
+                        "`date`," \
+                        " `content`) values(%s,%s,%s,%s)"
+                result = conn.execute(mysql,
+                                      (item['prodId'],
+                                       item['name'],
+                                       item['date'],
+                                       item['content']
+                                       ))
+                if result:
+                    print 'added a record'
+                else:
+                    print 'failed insert into table `jiafang_tianmao_reviews`'
 

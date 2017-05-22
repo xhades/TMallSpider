@@ -12,3 +12,15 @@ end_time varchar(255) default NULL ,
 primary key (id),
 unique key (prodId, `type`)
 ) ENGINE=INNODB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE  jiafang_tianmao_reviews(
+id  INT NOT NULL AUTO_INCREMENT,
+prodId varchar(25) default NULL comment "标题",
+name varchar(255) default NULL ,
+date varchar(15) default NULL ,
+content text default NULL ,
+
+primary key (id),
+unique key (`prodId`, `type`, `name`, `date`)
+) ENGINE=INNODB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;

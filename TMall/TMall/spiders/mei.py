@@ -3,7 +3,7 @@
 
 """
 @author: xhades
-@Date: 2017/4/11
+@Date: 2017/5/22
 
 """
 import sys
@@ -19,17 +19,17 @@ import time
 from scrapy.selector import Selector
 import re
 from scrapy.selector import Selector
-from TMall.items import TmallItem
+from TMall.items import TmallItem, TmallReviewsItem
 from time import sleep
 
 
 class TmallSpider(CrawlSpider):
-    name = 'mt'
+    name = 'tm'
     custom_settings = {'ITEM_PIPELINES': {'TMall.pipelines.TmallPipeline': 300}}
 
     def __init__(self):
         super(TmallSpider, self).__init__()
-        self.allowed_domains = ['https://meizhuang.tmall.com/?spm=a220o.1000855.0.0.KrkEU0']
+        self.allowed_domains = ['https://www.tmall.com/']
         self.start_urls = ['https://lovo.tmall.com/view_shop.htm?spm=a1z10.1-b-s.w5001-14406249609.11.rV6UL8&type=p&from=inshophq_1_0&newHeader_b=s_from&searcy_type=item&keyword=%CB%C4%BC%FE%CC%D7&search=y&orderType=defaultSort&tsearch=y&scene=taobao_shop']
         self.itemid='21479223750'
 
@@ -37,7 +37,7 @@ class TmallSpider(CrawlSpider):
         self.simpleIntroduction_xpath = "//div[@class='tb-detail-hd']/h1"
         self.price_xpath = "//span[@class='tm-price']"
 
-        # customer_reviews settings
+        # parse page settings
         self.start_page = 1
         self.end_page = 1
 
@@ -47,15 +47,18 @@ class TmallSpider(CrawlSpider):
 
     def parse(self, response):
         logging.info("=====GET SUCCESS=======")
-        for page in xrange(1, 5):
-            url = 'https://lovo.tmall.com/view_shop.htm?spm=a1z10.3-b-s.w4011-14406249681.376.a7nbdA&type=p&from=inshophq_1_0&newHeader_b=s_from&searcy_type=item&search=y&orderType=defaultSort&scene=taobao_shop&keyword=%CB%C4%BC%FE%CC%D7&pageNo={}&tsearch=y#anchor'.format(page)
+        for page in xrange(self.start_page, self.end_page+1):     # NOTE: 此处url会发生变化
+            url = 'https://luolai.tmall.com/i/asynSearch.htm?_ksTS=1495458822836_127&callback=jsonp128&mid=' \
+                  'w-14406186979-0&wid=14406186979&path=/search.htm&&search=y&pageNo={}&tsearch=y'.format(page)
             yield scrapy.Request(url, callback=self.parse_page, dont_filter=True)
 
     def parse_page(self, response):
         logging.info("=====PARSE NEXT PAGE=======")
 
-        href_list = response.xpath("//a[@class='item-name J_TGoldData']/@href").extract()
+        href_list = response.xpath("//a[contains(@class, 'J_TGoldData')]").extract()
+
         id_list = [re.search("id=(\d+)&", href).group(1) for href in href_list]
+        print id_list
         for id in id_list:
             url = "https://detail.m.tmall.com/item.htm?id={}".format(id)
             yield scrapy.Request(url, dont_filter=True, callback=self.parse_item, meta={'id':id})
@@ -67,6 +70,7 @@ class TmallSpider(CrawlSpider):
         data_mdskip = re.findall('_DATA_Mdskip = *?\n?(.*?\});? ?\n', response.body.decode('gbk'))
         data_detail_js = json.loads(data_detail[0])
         data_mdskip_js = json.loads(data_mdskip[0])
+
         try:
             spuid = re.search('spuId.*\"(\d+)?\"', data_detail[0]).group(1)
             sellerid = re.search("sellerId=(\d+)", data_detail[0]).group(1)
@@ -88,32 +92,11 @@ class TmallSpider(CrawlSpider):
         # category of item
         if 'valItemInfo' in data_detail_js.keys() and 'skuList' in data_detail_js['valItemInfo'].keys():
             skuList = data_detail_js.get('valItemInfo').get('skuList')
-            # print skuList
             names_dict = dict()
             for sku in skuList:
                 skuid = sku.get('skuId', None)
                 names = sku.get('names', None)
                 names_dict[skuid] = names
-
-            for key in data_detail_js['valItemInfo']['skuPics'].keys():
-                try:
-                    value = data_detail_js['valItemInfo']['skuPics'][key]
-                    # if key.startswith(';'):
-                    #     key = key[1:]
-                    # if key.endswith(';'):
-                    #     key = key[:-1]
-                    # key = 'https://detail.tmall.com/item.htm?id=%s&sku_properties=%s' % (
-                    #     routine['_id'], key.replace(';', '&'))
-                    # if value.startswith('//'):
-                    #     value = 'http:' + value
-                    # elif value.startswith('/'):
-                    #     value = 'http:/' + value
-                    # elif not value.startswith('http'):
-                    #     value = 'http://' + value
-                    # img_routines.append({'_id': value, '商品链接': key, '商品标题': title})
-                    # print value
-                except Exception, e:
-                    print e
 
         # 优惠活动
         youhui = []
@@ -177,6 +160,7 @@ class TmallSpider(CrawlSpider):
                         for a_item in item.fields:
                             item[a_item] = ''
                         item['prodId'] = response.meta['id']
+                        item['skuid'] = elem
                         item['type'] = names_dict[elem]
                         item['title'] = title
                         item['start_time'] = temp['活动开始时间']
@@ -185,12 +169,6 @@ class TmallSpider(CrawlSpider):
                         item['yuanjia'] = temp['原价']
                         item['xianjia'] = temp['现价']
                         item['end_time'] = temp['活动结束时间']
-                        for page in xrange(self.start_page, self.end_page + 1):
-
-                            itemid = response.meta['id']
-                            reviews_url = "https://rate.tmall.com/list_detail_rate.htm?itemId={}&spuId={}&sellerId={}&order=3&currentPage={}".format(
-                                itemid, spuid, sellerid, page)
-                            print '-'*40, reviews_url
-                        #
-                        print item
                         # yield item
+                        # print names_dict
+                        print item

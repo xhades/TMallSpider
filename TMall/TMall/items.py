@@ -12,6 +12,7 @@ class TmallItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     prodId = scrapy.Field()
+    skuid = scrapy.Field()
     type = scrapy.Field()
     start_time = scrapy.Field()
     youhui = scrapy.Field()
@@ -20,3 +21,10 @@ class TmallItem(scrapy.Item):
     xianjia = scrapy.Field()
     end_time = scrapy.Field()
     title = scrapy.Field()
+
+
+class TmallReviewsItem(scrapy.Item):
+    prodId = scrapy.Field()
+    date = scrapy.Field()
+    name = scrapy.Field()
+    content = scrapy.Field()
