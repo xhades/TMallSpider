@@ -20,21 +20,20 @@ NEWSPIDER_MODULE = 'TMall.spiders'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
-CONCURRENT_REQUESTS = 4
 
 
 MYSQL_HOST  =  '127.0.0.1'
 MYSQL_DBNAME = 'spiderdb'
-MYSQL_USER = 'user'
-MYSQL_PASSWD = 'passwd'
+MYSQL_USER = 'root'
+MYSQL_PASSWD = 'ddos'
 MYSQL_PORT = 3306
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 2
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16

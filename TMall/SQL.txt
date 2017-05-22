@@ -2,15 +2,17 @@ CREATE TABLE  jiafang_tianmao(
 id  INT NOT NULL AUTO_INCREMENT,
 title varchar(255) default NULL comment "标题",
 prodId varchar(15) default NULL ,
+skuid varchar(25) default NULL ,
 `type` varchar(155) default NULL comment "分类",
 youhui varchar(125) default NULL,
 huodong varchar(125) default NULL,
 yuanjia varchar(55) default NULL ,
 xianjia varchar(255) default NULL ,
-start_time varchar(255) default NULL ,
-end_time varchar(255) default NULL ,
+sellcount varchar(15) default NULL ,
+kucun varchar(15) default NULL ,
+update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,
 primary key (id),
-unique key (prodId, `type`)
+unique key (prodId, `type`,`skuid`,`sellcount`, `kucun`)
 ) ENGINE=INNODB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
 

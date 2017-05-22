@@ -58,7 +58,6 @@ class TmallSpider(CrawlSpider):
         href_list = response.xpath("//a[contains(@class, 'J_TGoldData')]").extract()
 
         id_list = [re.search("id=(\d+)&", href).group(1) for href in href_list]
-        print id_list
         for id in id_list:
             url = "https://detail.m.tmall.com/item.htm?id={}".format(id)
             yield scrapy.Request(url, dont_filter=True, callback=self.parse_item, meta={'id':id})
@@ -70,14 +69,6 @@ class TmallSpider(CrawlSpider):
         data_mdskip = re.findall('_DATA_Mdskip = *?\n?(.*?\});? ?\n', response.body.decode('gbk'))
         data_detail_js = json.loads(data_detail[0])
         data_mdskip_js = json.loads(data_mdskip[0])
-
-        try:
-            spuid = re.search('spuId.*\"(\d+)?\"', data_detail[0]).group(1)
-            sellerid = re.search("sellerId=(\d+)", data_detail[0]).group(1)
-        except:
-            spuid = ''
-            sellerid = ''
-        html = response.body.decode('gbk', 'ignore')
 
         title = response.xpath('//section[@id="s-title"]/div[@class="main"]/h1/text()').extract()
         if title:
@@ -116,6 +107,14 @@ class TmallSpider(CrawlSpider):
                 if 'promPlanMsg' in one.keys():
                     youhui = ';'.join(one['promPlanMsg'])
                     youhui = youhui.replace('.', '点')
+        # 销量
+        sellcount = data_mdskip_js['defaultModel']['sellCountDO'].get('sellCount', 'not got sellcount')
+
+        # 库存
+        quantity_dict = dict()
+        skuQuantitys = data_mdskip_js['defaultModel']['inventoryDO'].get('skuQuantity')
+        for k, v in skuQuantitys.items():
+           quantity_dict[k] = v.get('totalQuantity', 'Not got')
 
         # 以上为不同颜色/型号商品共享的数据，以下求每个颜色/型号的商品信息
         if 'defaultModel' in data_mdskip_js.keys() and 'itemPriceResultDO' in data_mdskip_js[
@@ -142,18 +141,18 @@ class TmallSpider(CrawlSpider):
                         if 'price' in one.keys() and len(one['price']) > 0:
                             temp['现价'] = one['price']
 
-                        if 'startTime' in one.keys():
-                            temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
-                                                           time.localtime(one['startTime'] / 1000))
-                        elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
-                                data_mdskip_js['defaultModel'][
-                                    'tradeResult'].keys():
-                            startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
-                            temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
-                                                           time.localtime(startTime / 1000))
-                        if 'endTime' in one.keys():
-                            temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
-                                                           time.localtime(one['endTime'] / 1000))
+                        # if 'startTime' in one.keys():
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['startTime'] / 1000))
+                        # elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
+                        #         data_mdskip_js['defaultModel'][
+                        #             'tradeResult'].keys():
+                        #     startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(startTime / 1000))
+                        # if 'endTime' in one.keys():
+                        #     temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['endTime'] / 1000))
                         temp['活动'] = msg
 
                         item = TmallItem()
@@ -162,13 +161,14 @@ class TmallSpider(CrawlSpider):
                         item['prodId'] = response.meta['id']
                         item['skuid'] = elem
                         item['type'] = names_dict[elem]
+                        item['sellcount'] = sellcount
                         item['title'] = title
-                        item['start_time'] = temp['活动开始时间']
+                        # item['start_time'] = temp['活动开始时间']
                         item['youhui'] = temp['优惠活动']
                         item['huodong'] = temp['活动']
                         item['yuanjia'] = temp['原价']
                         item['xianjia'] = temp['现价']
-                        item['end_time'] = temp['活动结束时间']
-                        # yield item
-                        # print names_dict
-                        print item
+                        item['kucun'] = quantity_dict[elem]
+                        # item['end_time'] = temp['活动结束时间']
+                        yield item
+                        # print item

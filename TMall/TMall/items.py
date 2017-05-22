@@ -14,12 +14,14 @@ class TmallItem(scrapy.Item):
     prodId = scrapy.Field()
     skuid = scrapy.Field()
     type = scrapy.Field()
-    start_time = scrapy.Field()
+    sellcount = scrapy.Field()
+    # start_time = scrapy.Field()
     youhui = scrapy.Field()
     huodong = scrapy.Field()
     yuanjia = scrapy.Field()
     xianjia = scrapy.Field()
-    end_time = scrapy.Field()
+    kucun = scrapy.Field()
+    # end_time = scrapy.Field()
     title = scrapy.Field()
 
 
