@@ -10,8 +10,9 @@ yuanjia varchar(55) default NULL ,
 xianjia varchar(255) default NULL ,
 sellcount varchar(15) default NULL ,
 kucun varchar(15) default NULL ,
+dianpu varchar(55) default NULL ,
 update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-primary key (id),
+primary key (update_time),
 unique key (prodId, `type`,`skuid`,`sellcount`, `kucun`)
 ) ENGINE=INNODB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 

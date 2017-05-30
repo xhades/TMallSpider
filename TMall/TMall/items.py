@@ -23,6 +23,7 @@ class TmallItem(scrapy.Item):
     kucun = scrapy.Field()
     # end_time = scrapy.Field()
     title = scrapy.Field()
+    dianpu = scrapy.Field()
 
 
 class TmallReviewsItem(scrapy.Item):

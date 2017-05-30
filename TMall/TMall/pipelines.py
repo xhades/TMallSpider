@@ -54,7 +54,8 @@ class TmallPipeline(object):
                         " `skuid`, " \
                         " `sellcount`, " \
                         " `kucun`, " \
-                        " `title`) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                        " `dianpu`, " \
+                        " `title`) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 result = conn.execute(mysql,
                                       (item['prodId'],
                                        item['type'],
@@ -65,12 +66,14 @@ class TmallPipeline(object):
                                        item['skuid'],
                                        item['sellcount'],
                                        item['kucun'],
+                                       item['dianpu'],
                                        item['title']
                                        ))
                 if result:
                     print 'added a record'
                 else:
-                    print 'failed insert into table `jiafang_tianmao`'
+                    # print 'failed insert into table `jiafang_tianmao`'
+                    print '-'*20, item['prodId'], item['skuid']
             # else:
             #     mysql = "INSERT IGNORE INTO `jiafang_tianmao_reviews`(" \
             #             "`prodId`," \
