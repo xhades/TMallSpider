@@ -16,22 +16,18 @@ from scrapy.spiders import CrawlSpider
 import logging
 import json
 import time
-from scrapy.selector import Selector
 import re
-from scrapy.selector import Selector
 from TMall.items import TmallItem, TmallReviewsItem
-from time import sleep
 
 
 class TmallSpider(CrawlSpider):
-    name = 'luolai'
+    name = 'boyang'
     custom_settings = {'ITEM_PIPELINES': {'TMall.pipelines.TmallPipeline': 300}}
 
     def __init__(self):
         super(TmallSpider, self).__init__()
         self.allowed_domains = ['https://www.tmall.com/']
-        self.start_urls = ['https://luolai.tmall.com/']
-        self.itemid='21479223750'
+        self.start_urls = ['https://beyond.tmall.com/']
 
         # items xpath
         self.simpleIntroduction_xpath = "//div[@class='tb-detail-hd']/h1"
@@ -48,7 +44,7 @@ class TmallSpider(CrawlSpider):
     def parse(self, response):
         logging.info("=====GET SUCCESS=======")
         for page in xrange(self.start_page, self.end_page+1):     # NOTE: 此处url会发生变化
-            url = 'https://luolai.tmall.com/i/asynSearch.htm?_ksTS=1495645725103_337&callback=jsonp338&mid=w-14406186969-0&wid=14406186969&path=/category.htm&&spm=a1z10.5-b-s.w4011-14406186969.452.ZCVOgj&scene=taobao_shop&pageNo={}'.format(page)
+            url = 'https://beyond.tmall.com/i/asynSearch.htm?_ksTS=1496241869905_136&callback=jsonp137&mid=w-14593672890-0&wid=14593672890&path=/category.htm&&spm=a1z10.5-b-s.w4011-14593672890.402.8G2yjX&pageNo={}'.format(page)
             yield scrapy.Request(url, callback=self.parse_page, dont_filter=True)
 
     def parse_page(self, response):
@@ -59,7 +55,7 @@ class TmallSpider(CrawlSpider):
         id_list = [re.search("id=(\d+)&", href).group(1) for href in href_list]
         for id in id_list:
             url = "https://detail.m.tmall.com/item.htm?id={}".format(id)
-            yield scrapy.Request(url, dont_filter=True, callback=self.parse_item, meta={'id': id})
+            yield scrapy.Request(url, dont_filter=True, callback=self.parse_item, meta={'id':id})
 
     def parse_item(self, response):
 
@@ -135,6 +131,7 @@ class TmallSpider(CrawlSpider):
         if 'defaultModel' in data_mdskip_js.keys() and 'itemPriceResultDO' in data_mdskip_js[
             'defaultModel'].keys() and 'priceInfo' in data_mdskip_js[
             'defaultModel']['itemPriceResultDO'].keys():
+
             for elem in data_mdskip_js['defaultModel']['itemPriceResultDO']['priceInfo'].keys():
 
                 value = data_mdskip_js['defaultModel']['itemPriceResultDO']['priceInfo'][elem]
@@ -149,7 +146,15 @@ class TmallSpider(CrawlSpider):
                     for one in value['promotionList']:
                         if 'price' in one.keys() and len(one['price']) > 0:
                             temp['现价'] = one['price']
-
+                        # if 'startTime' in one.keys():
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['startTime'] / 1000))
+                        # elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
+                        #         data_mdskip_js['defaultModel'][
+                        #             'tradeResult'].keys():
+                        #     startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(startTime / 1000))
                         if 'endTime' in one.keys():
                             temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
                                                            time.localtime(one['endTime'] / 1000))
@@ -175,15 +180,26 @@ class TmallSpider(CrawlSpider):
                         item['xianjia'] = temp['现价']
                         item['kucun'] = quantity_dict[elem]
                         item['huodong'] = temp['huodong'] + u"活动结束时间:" + temp['活动结束时间']
-                        item['dianpu'] = u"罗莱"
-                        # item['end_time'] = temp['活动结束时间']
+
+                        item['dianpu'] = u"博洋"
                         yield item
                         # print item
+
                 elif 'suggestivePromotionList' in value.keys():
                     for one in value['suggestivePromotionList']:
                         if 'price' in one.keys() and len(one['price']) > 0:
                             temp['现价'] = one['price']
 
+                        # if 'startTime' in one.keys():
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['startTime'] / 1000))
+                        #
+                        # elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
+                        #         data_mdskip_js['defaultModel'][
+                        #             'tradeResult'].keys():
+                        #     startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(startTime / 1000))
                         if 'endTime' in one.keys():
                             temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
                                                            time.localtime(one['endTime'] / 1000))
@@ -208,8 +224,7 @@ class TmallSpider(CrawlSpider):
                         item['xianjia'] = temp['现价']
                         item['kucun'] = quantity_dict[elem]
                         item['huodong'] = temp['huodong'] + u"活动结束时间:" + temp['活动结束时间']
-
-                        item['dianpu'] = u"罗莱"
+                        item['dianpu'] = u"博洋"
                         # item['end_time'] = temp['活动结束时间']
                         yield item
                         # print item

@@ -18,9 +18,7 @@ import json
 import time
 from scrapy.selector import Selector
 import re
-from scrapy.selector import Selector
 from TMall.items import TmallItem, TmallReviewsItem
-from time import sleep
 
 
 class TmallSpider(CrawlSpider):
@@ -31,7 +29,6 @@ class TmallSpider(CrawlSpider):
         super(TmallSpider, self).__init__()
         self.allowed_domains = ['https://www.tmall.com/']
         self.start_urls = ['https://fuanna.tmall.com/']
-        self.itemid='21479223750'
 
         # items xpath
         self.simpleIntroduction_xpath = "//div[@class='tb-detail-hd']/h1"
@@ -48,9 +45,7 @@ class TmallSpider(CrawlSpider):
     def parse(self, response):
         logging.info("=====GET SUCCESS=======")
         for page in xrange(self.start_page, self.end_page+1):     # NOTE: 此处url会发生变化
-            url = 'https://fuanna.tmall.com/i/asynSearch.htm?_ksTS=1495724058222_126&callback=jsonp127&mid=' \
-                  'w-14433455490-0&wid=14433455490&&spm=a1z10.3-b-s.w4011-14433455490.560.GZmwkL&search=y&orderType=' \
-                  'hotsell_desc&scene=taobao_shop&pageNo={}'.format(page)
+            url = 'https://fuanna.tmall.com/i/asynSearch.htm?_ksTS=1496233687027_126&callback=jsonp127&mid=w-14433455490-0&wid=14433455490&path=/category.htm&&spm=a1z10.3-b-s.w4011-14433455490.561.KvqaQi&search=y&orderType=hotsell_desc&scene=taobao_shop&pageNo={}'.format(page)
             yield scrapy.Request(url, callback=self.parse_page, dont_filter=True)
 
     def parse_page(self, response):
@@ -152,6 +147,25 @@ class TmallSpider(CrawlSpider):
                     for one in value['promotionList']:
                         if 'price' in one.keys() and len(one['price']) > 0:
                             temp['现价'] = one['price']
+                        # if 'startTime' in one.keys():
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['startTime'] / 1000))
+                        # elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
+                        #         data_mdskip_js['defaultModel'][
+                        #             'tradeResult'].keys():
+                        #     startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(startTime / 1000))
+                        if 'endTime' in one.keys():
+                            temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                           time.localtime(one['endTime'] / 1000))
+
+                        if 'type' in one.keys() and 'status' in one.keys():
+                            if one['status'] == 1:
+
+                                temp['huodong'] = one['type']
+                            else:
+                                temp['huodong'] = ''
 
                         item = TmallItem()
                         for a_item in item.fields:
@@ -166,10 +180,52 @@ class TmallSpider(CrawlSpider):
                         item['yuanjia'] = temp['原价']
                         item['xianjia'] = temp['现价']
                         item['kucun'] = quantity_dict[elem]
+                        item['huodong'] = temp['huodong'] + u"活动结束时间:" + temp['活动结束时间']
+
+                        item['dianpu'] = u"富安娜"
+                        yield item
+                        # print item
+
+                elif 'suggestivePromotionList' in value.keys():
+                    for one in value['suggestivePromotionList']:
+                        if 'price' in one.keys() and len(one['price']) > 0:
+                            temp['现价'] = one['price']
+
+                        # if 'startTime' in one.keys():
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(one['startTime'] / 1000))
+                        #
+                        # elif 'tradeResult' in data_mdskip_js['defaultModel'].keys() and 'startTime' in \
+                        #         data_mdskip_js['defaultModel'][
+                        #             'tradeResult'].keys():
+                        #     startTime = data_mdskip_js['defaultModel']['tradeResult']['startTime']
+                        #     temp['活动开始时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                        #                                    time.localtime(startTime / 1000))
+                        if 'endTime' in one.keys():
+                            temp['活动结束时间'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                           time.localtime(one['endTime'] / 1000))
+
+                        if 'type' in one.keys() and 'status' in one.keys():
+                            if one['status'] == 1:
+                                temp['huodong'] = one['type']
+                            else:
+                                temp['huodong'] = ''
+
+                        item = TmallItem()
+                        for a_item in item.fields:
+                            item[a_item] = ''
+                        item['prodId'] = response.meta['id']
+                        item['skuid'] = elem
+                        item['type'] = names_dict[elem]
+                        item['sellcount'] = sellcount
+                        item['title'] = title
+                        # item['start_time'] = temp['活动开始时间']
+                        item['youhui'] = temp['优惠活动']
+                        item['yuanjia'] = temp['原价']
+                        item['xianjia'] = temp['现价']
+                        item['kucun'] = quantity_dict[elem]
+                        item['huodong'] = temp['huodong'] + u"活动结束时间:" + temp['活动结束时间']
                         item['dianpu'] = u"富安娜"
                         # item['end_time'] = temp['活动结束时间']
-                        # yield item
+                        yield item
                         # print item
-        else:
-            with open('id.log', 'a') as f:
-                f.write(response.meta['id'] + '\n')
